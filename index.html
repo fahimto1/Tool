@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Removal Tool</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .upload-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-label {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 500;
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    .upload-label:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .preview-section {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .download-button {
+      display: none;
+      margin-top: 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 500;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .download-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .loading {
+      display: none;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border: 2px solid #fff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .upload-label, .download-button {
+        padding: 0.75rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Background Removal Tool</h1>
+    <div class="upload-section">
+      <label for="file-input" class="upload-label">Upload Image</label>
+      <input type="file" id="file-input" accept="image/*">
+    </div>
+    <div class="preview-section">
+      <img id="preview-image" class="preview-image" src="#" alt="Preview">
+      <a id="download-button" class="download-button" download="background-removed.png">Download Image</a>
+    </div>
+    <div class="loading" id="loading">Processing...</div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('file-input');
+    const previewImage = document.getElementById('preview-image');
+    const downloadButton = document.getElementById('download-button');
+    const loading = document.getElementById('loading');
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        loading.style.display = 'block';
+        previewImage.style.display = 'none';
+        downloadButton.style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('image_file', file);
+
+        try {
+          const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+            method: 'POST',
+            headers: {
+              'X-Api-Key': 'sSfseoTNZ9QK7Q2ib4iH8EPA', // Replace with your API key
+            },
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to remove background');
+          }
+
+          const blob = await response.blob();
+          const imageUrl = URL.createObjectURL(blob);
+
+          previewImage.src = imageUrl;
+          previewImage.style.display = 'block';
+          downloadButton.href = imageUrl;
+          downloadButton.style.display = 'inline-block';
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred while removing the background.');
+        } finally {
+          loading.style.display = 'none';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
